@@ -71,10 +71,15 @@ function TravelerAvatar() {
           width: 'clamp(100px,15vw,140px)', height: 'clamp(100px,15vw,140px)',
           borderRadius: '50%', border: '3px solid rgba(201,168,142,.45)',
           background: 'radial-gradient(circle at 50% 38%, #fdefe6, #f6e3d3)',
-          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6,
+          display: 'flex', flexDirection: 'column', alignItems: 'center',
+          justifyContent: 'center',
           overflow: 'hidden',
         }}>
-          <img src="/tom-nook-face.png" alt="" style={{ width: 50, height: 50, objectFit: 'contain' }} />
+          <img src="/tom-nook-face.png" alt="" style={{
+            width: 50, height: 50, objectFit: 'contain',
+            position: 'relative', zIndex: 1,
+            marginBottom: 'clamp(-14px,-2.5vw,-8px)',
+          }} />
           <div className="avatar-upload-pill">Upload photo</div>
         </div>
         <input type="file" accept="image/*" capture="environment" onChange={handlePick} style={{ display: 'none' }} />
@@ -287,7 +292,6 @@ function ScrapbookTab({ stamps }) {
       </div>
       {count === 0 ? (
         <div style={{ border: '2px dashed #e3d3b5', borderRadius: 24, background: 'repeating-linear-gradient(135deg,#fdf8ee,#fdf8ee 14px,#fbf3e4 14px,#fbf3e4 28px)', padding: '44px 26px', textAlign: 'center' }}>
-          <div style={{ fontSize: 40, marginBottom: 8 }}>🖼️</div>
           <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 19, color: '#6b5742', marginBottom: 5 }}>No photos yet</div>
           <p style={{ margin: '0 auto', maxWidth: 380, fontSize: 14, fontWeight: 500, color: '#9a8467' }}>
             Complete a quest and upload a photo — it'll be stamped and gathered here.
@@ -346,6 +350,7 @@ export default function HomeScreen() {
     const next = HOME_TAB_ORDER.indexOf(tab)
     setTabDir(next >= prev ? 1 : -1)
     setHomeTab(tab)
+    window.scrollTo(0, 0)
   }
 
   const tabAnim = tabDir >= 0 ? 'anim-tab-right' : 'anim-tab-left'

@@ -93,28 +93,29 @@ function StampedCard({ photoUrl, a, city, rot, stamp }) {
 
 function UnstampedCard({ a, city }) {
   return (
-    <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', padding: '16px 14px' }}>
+    <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', padding: 'clamp(10px,3vw,16px) clamp(10px,3vw,14px)' }}>
       <div style={{
         display: 'inline-flex', alignSelf: 'flex-start', alignItems: 'center', gap: 5,
-        fontSize: 11, fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase',
-        color: city.ink, background: city.accentSoft, padding: '3px 8px', borderRadius: 99, marginBottom: 9,
+        fontSize: 'clamp(9px,2vw,11px)', fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase',
+        color: city.ink, background: city.accentSoft,
+        padding: 'clamp(2px,0.5vw,3px) clamp(5px,1.5vw,8px)', borderRadius: 99, marginBottom: 'clamp(5px,1.5vw,9px)',
       }}>
         {a.label}
       </div>
-      <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 15, lineHeight: 1.15, color: '#4a3528', marginBottom: 5 }}>
+      <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 'clamp(12px,3vw,15px)', lineHeight: 1.15, color: '#4a3528', marginBottom: 'clamp(3px,1vw,5px)' }}>
         {a.name}
       </div>
-      <p style={{ margin: 0, fontSize: 13, fontWeight: 500, color: '#9a8467', lineHeight: 1.4 }}>
+      <p style={{ margin: 0, fontSize: 'clamp(11px,2.5vw,13px)', fontWeight: 500, color: '#9a8467', lineHeight: 1.35 }}>
         {a.blurb}
       </p>
-      <div style={{ flex: 1, minHeight: 12 }} />
+      <div style={{ flex: 1, minHeight: 6 }} />
       <div style={{
-        border: '2px dashed #d8c5a6', borderRadius: 14, padding: '12px 10px',
-        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, color: '#b89a72',
+        border: '2px dashed #d8c5a6', borderRadius: 14, padding: 'clamp(7px,2vw,12px) 10px',
+        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, color: '#b89a72',
         background: 'repeating-linear-gradient(45deg,#fdf8ee,#fdf8ee 8px,#fbf3e4 8px,#fbf3e4 16px)',
       }}>
-        <div style={{ fontSize: 22 }}>📷</div>
-        <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: .5, textTransform: 'uppercase' }}>Add photo</div>
+        <div style={{ fontSize: 'clamp(15px,3.5vw,22px)' }}>📷</div>
+        <div style={{ fontSize: 'clamp(9px,2vw,12px)', fontWeight: 700, letterSpacing: .5, textTransform: 'uppercase' }}>Add photo</div>
       </div>
     </div>
   )
@@ -199,7 +200,6 @@ function CityScrapbook({ city, stamps }) {
       </div>
       {count === 0 ? (
         <div style={{ border: '2px dashed #e3d3b5', borderRadius: 24, background: 'repeating-linear-gradient(135deg,#fdf8ee,#fdf8ee 14px,#fbf3e4 14px,#fbf3e4 28px)', padding: '44px 26px', textAlign: 'center' }}>
-          <div style={{ fontSize: 40, marginBottom: 8 }}>🖼️</div>
           <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 19, color: '#6b5742', marginBottom: 5 }}>
             No photos from {city.name} yet
           </div>
@@ -260,6 +260,7 @@ export default function CityDetail() {
   const [cityTabDir, setCityTabDir] = useState(1)
 
   const handleCityTabChange = (tab) => {
+    window.scrollTo(0, 0)
     const prev = CITY_TAB_ORDER.indexOf(cityTab)
     const next = CITY_TAB_ORDER.indexOf(tab)
     setCityTabDir(next >= prev ? 1 : -1)

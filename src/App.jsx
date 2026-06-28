@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import useGameStore from './store/useGameStore'
 import WelcomeScreen from './components/WelcomeScreen'
 import TopBar from './components/TopBar'
@@ -12,6 +13,8 @@ export default function App() {
     modalActivityId: s.modalActivityId,
     settingsScreen:  s.settingsScreen,
   }))
+
+  useEffect(() => { window.scrollTo(0, 0) }, [screen])
 
   if (screen === 'intro') return <WelcomeScreen />
 
