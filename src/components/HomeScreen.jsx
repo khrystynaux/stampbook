@@ -75,14 +75,10 @@ function TravelerAvatar() {
           justifyContent: 'center',
           overflow: 'hidden',
         }}>
-          <img src="/tom-nook-face.png" alt="" style={{
-            width: 50, height: 50, objectFit: 'contain',
-            position: 'relative', zIndex: 1,
-            marginBottom: 'clamp(-14px,-2.5vw,-8px)',
-          }} />
-          <div className="avatar-upload-pill">Upload photo</div>
+          <img src="/tom-nook-face.png" alt="" style={{ width: 50, height: 50, objectFit: 'contain', display: 'block' }} />
+          <div className="avatar-upload-pill" style={{ marginTop: -8 }}>Upload photo</div>
         </div>
-        <input type="file" accept="image/*" capture="environment" onChange={handlePick} style={{ display: 'none' }} />
+        <input type="file" accept="image/*" onChange={handlePick} style={{ display: 'none' }} />
       </label>
     )
   }
@@ -105,7 +101,7 @@ function TravelerAvatar() {
       <div className={`traveler-avatar-ctl${tapVisible ? ' ctl-tap-visible' : ''}`}>
         <label className="traveler-ctl-replace" onClick={e => e.stopPropagation()} style={{ cursor: 'pointer' }}>
           Upload new
-          <input ref={inputRef} type="file" accept="image/*" capture="environment" onChange={handlePick} style={{ display: 'none' }} />
+          <input ref={inputRef} type="file" accept="image/*" onChange={handlePick} style={{ display: 'none' }} />
         </label>
         <button className="traveler-ctl-clear" onClick={handleRemove}>
           Remove
