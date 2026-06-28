@@ -232,30 +232,45 @@ export default function StampModal() {
               )}
             </div>
           ) : (
-            <label style={{
-              display: 'block', position: 'relative',
+            <div style={{
+              position: 'relative',
               border: '3px dashed #d8c5a6', borderRadius: 20,
               background: 'repeating-linear-gradient(45deg,#fdf8ee,#fdf8ee 11px,#fbf3e4 11px,#fbf3e4 22px)',
-              height: 'clamp(200px,45vw,236px)', cursor: 'pointer', marginBottom: 14,
+              height: 'clamp(200px,45vw,236px)', marginBottom: 14,
+              display: 'grid', placeItems: 'center', textAlign: 'center', padding: 20,
             }}>
-              <div style={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center', textAlign: 'center', padding: 20 }}>
-                <div>
-                  <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 16, color: '#6b5742' }}>
-                    Add your photo from {a.name}
-                  </div>
-                  <div style={{
-                    display: 'inline-flex', alignItems: 'center', gap: 7,
-                    background: city.ink, color: '#fff',
-                    fontFamily: 'Fredoka', fontWeight: 600, fontSize: 14,
-                    padding: '10px 18px', borderRadius: 99, marginTop: 13,
-                    boxShadow: '0 4px 0 0 rgba(0,0,0,.16)',
-                  }}>
-                    Upload photo
-                  </div>
+              <div>
+                <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 16, color: '#6b5742', marginBottom: 18 }}>
+                  Add your photo from {a.name}
+                </div>
+                <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
+                  <label style={{ cursor: 'pointer', display: 'inline-flex' }}>
+                    <div style={{
+                      display: 'inline-flex', alignItems: 'center',
+                      background: city.ink, color: '#fff',
+                      fontFamily: 'Fredoka', fontWeight: 600, fontSize: 14,
+                      padding: '10px 18px', borderRadius: 99,
+                      boxShadow: '0 4px 0 0 rgba(0,0,0,.16)', whiteSpace: 'nowrap',
+                    }}>
+                      Take photo
+                    </div>
+                    <input type="file" accept="image/*" capture="environment" onChange={handlePick} style={{ display: 'none' }} />
+                  </label>
+                  <label style={{ cursor: 'pointer', display: 'inline-flex' }}>
+                    <div style={{
+                      display: 'inline-flex', alignItems: 'center',
+                      background: city.accentSoft, color: city.ink,
+                      fontFamily: 'Fredoka', fontWeight: 600, fontSize: 14,
+                      padding: '10px 18px', borderRadius: 99,
+                      boxShadow: '0 3px 0 0 rgba(0,0,0,.08)', whiteSpace: 'nowrap',
+                    }}>
+                      Upload photo
+                    </div>
+                    <input type="file" accept="image/*" onChange={handlePick} style={{ display: 'none' }} />
+                  </label>
                 </div>
               </div>
-              <input ref={inputRef} type="file" accept="image/*" capture="environment" onChange={handlePick} style={{ display: 'none' }} />
-            </label>
+            </div>
           )}
 
           {/* Caption + stamp button — only in upload phase */}

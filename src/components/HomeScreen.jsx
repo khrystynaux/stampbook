@@ -75,9 +75,7 @@ function TravelerAvatar() {
           overflow: 'hidden',
         }}>
           <img src="/tom-nook-face.png" alt="" style={{ width: 50, height: 50, objectFit: 'contain' }} />
-          <div style={{ background: '#9acd7b', color: '#fff', fontFamily: 'Fredoka', fontWeight: 600, fontSize: 14, padding: '6px 14px', borderRadius: 99, boxShadow: '0 3px 0 #7fb262' }}>
-            Upload photo
-          </div>
+          <div className="avatar-upload-pill">Upload photo</div>
         </div>
         <input type="file" accept="image/*" capture="environment" onChange={handlePick} style={{ display: 'none' }} />
       </label>
@@ -115,10 +113,8 @@ function TravelerAvatar() {
 // ── Passport ID card ──────────────────────────────────────────────────────────
 
 function PassportCard({ travelerName, stamps }) {
-  const totalActivities = useMemo(() => CITIES.reduce((n, c) => n + c.activities.length, 0), [])
   const done = Object.keys(stamps).length
   const rank = getRank(done)
-  const joinMonth = useMemo(() => new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' }), [])
 
   return (
     <div style={{
@@ -140,20 +136,7 @@ function PassportCard({ travelerName, stamps }) {
           </div>
           <div style={{ fontSize: 14, fontWeight: 600, color: '#a8916f' }}>Where are we going next?</div>
         </div>
-        <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: 'clamp(12px, 3vw, 20px)', justifyContent: 'flex-end' }}>
-          <Stat label="Member since" value={joinMonth} />
-          <Stat label="Total stamps" value={`${done} / ${totalActivities}`} green />
-        </div>
       </div>
-    </div>
-  )
-}
-
-function Stat({ label, value, green }) {
-  return (
-    <div style={{ textAlign: 'right' }}>
-      <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase', color: '#b39875' }}>{label}</div>
-      <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 16, color: green ? '#6aa548' : '#6b5742' }}>{value}</div>
     </div>
   )
 }
@@ -167,7 +150,7 @@ function TabNav({ active, onChange }) {
     { id: 'scrapbook', label: 'Scrapbook' },
   ]
   return (
-    <nav style={{ display: 'inline-flex', gap: 4, alignItems: 'center', background: '#f3e7d3', borderRadius: 99, padding: 4, marginBottom: 20, flexWrap: 'wrap' }}>
+    <nav style={{ display: 'inline-flex', gap: 4, alignItems: 'center', background: '#f3e7d3', borderRadius: 99, padding: 4 }}>
       {tabs.map(t => (
         <button
           key={t.id}
@@ -345,6 +328,7 @@ function ScrapCard({ entry: e }) {
 // ── HomeScreen root ───────────────────────────────────────────────────────────
 
 const HOME_TAB_ORDER = ['cities', 'stamps', 'scrapbook']
+const TOTAL_ACTIVITIES = CITIES.reduce((n, c) => n + c.activities.length, 0)
 
 export default function HomeScreen() {
   const { travelerName, stamps, homeTab, setHomeTab } = useGameStore(s => ({
@@ -355,6 +339,7 @@ export default function HomeScreen() {
   }))
 
   const [tabDir, setTabDir] = useState(1)
+  const done = Object.keys(stamps).length
 
   const handleTabChange = (tab) => {
     const prev = HOME_TAB_ORDER.indexOf(homeTab)
@@ -368,7 +353,14 @@ export default function HomeScreen() {
   return (
     <section className="page-container">
       <PassportCard travelerName={travelerName} stamps={stamps} />
-      <TabNav active={homeTab} onChange={handleTabChange} />
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
+        <TabNav active={homeTab} onChange={handleTabChange} />
+        <div style={{ flex: 1 }} />
+        <div style={{ textAlign: 'right', flexShrink: 0 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: .5, textTransform: 'uppercase', color: '#b39875' }}>Total stamps</div>
+          <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 15, color: '#6aa548' }}>{done} / {TOTAL_ACTIVITIES}</div>
+        </div>
+      </div>
 
       {homeTab === 'cities' && (
         <div key="home-cities" className={`city-grid ${tabAnim}`}>

@@ -146,7 +146,7 @@ function LocalSection({ city, stamps, openModal }) {
             Locals are keeping these secret…
           </div>
           <p style={{ margin: '0 auto 16px', maxWidth: 420, fontSize: 14, fontWeight: 500, color: '#9a8467' }}>
-            Finish the Must See activities to unlock {localActs.length} local spots only the residents know.
+            Finish the Must See activities to unlock {localActs.length} spots recommended by locals.
           </p>
           <div style={{ maxWidth: 300, margin: '0 auto' }}>
             <div style={{ height: 12, borderRadius: 99, background: '#efe5d3', overflow: 'hidden', marginBottom: 7 }}>

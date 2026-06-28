@@ -215,6 +215,25 @@ img {
 }
 .traveler-ctl-clear:hover { background: #fff; }
 
+/* Avatar "Upload photo" pill — scales down to fit inside the 100px min-circle */
+.avatar-upload-pill {
+  background: #9acd7b;
+  color: #fff;
+  font-family: Fredoka, sans-serif;
+  font-weight: 600;
+  font-size: 11px;
+  padding: 5px 8px;
+  border-radius: 99px;
+  box-shadow: 0 3px 0 #7fb262;
+  white-space: nowrap;
+}
+@media (min-width: 480px) {
+  .avatar-upload-pill {
+    font-size: 14px;
+    padding: 6px 14px;
+  }
+}
+
 /* ── Grid item stagger ──────────────────────────────────────── */
 
 /* City cards bloom in when the tab mounts */
