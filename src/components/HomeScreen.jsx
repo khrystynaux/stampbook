@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef } from 'react'
-import { CITIES } from '../data/cities'
+// Cities now come from the store (userCities), not the static data file
 import useGameStore, { rotFromId, tiltFromId, getRank } from '../store/useGameStore'
 import { useActivityPhoto, useTravelerPhoto } from '../hooks/usePhoto'
 import { savePhoto, deletePhoto } from '../utils/db'
@@ -222,10 +222,10 @@ function CitySpreadCard({ city, stamps }) {
 
 // ── Stamps gallery ────────────────────────────────────────────────────────────
 
-function AllStampsTab({ stamps }) {
-  const allActivities = useMemo(() => CITIES.flatMap(c =>
+function AllStampsTab({ stamps, cities }) {
+  const allActivities = useMemo(() => cities.flatMap(c =>
     c.activities.map(a => ({ ...a, cityShort: c.short, cityInk: c.ink }))
-  ), [])
+  ), [cities])
 
   return (
     <div className="stamp-wall">
@@ -269,14 +269,14 @@ function StampCell({ activity: a, stamps }) {
 
 // ── Scrapbook ─────────────────────────────────────────────────────────────────
 
-function ScrapbookTab({ stamps }) {
+function ScrapbookTab({ stamps, cities }) {
   const allEntries = useMemo(() => {
-    return CITIES.flatMap(c =>
+    return cities.flatMap(c =>
       c.activities
         .filter(a => stamps[a.id])
         .map(a => ({ ...a, cityName: c.name, cityShort: c.short, ink: c.ink, stamp: stamps[a.id] }))
     )
-  }, [stamps])
+  }, [stamps, cities])
 
   const count = allEntries.length
 
@@ -328,15 +328,38 @@ function ScrapCard({ entry: e }) {
 // ── HomeScreen root ───────────────────────────────────────────────────────────
 
 const HOME_TAB_ORDER = ['cities', 'stamps', 'scrapbook']
-const TOTAL_ACTIVITIES = CITIES.reduce((n, c) => n + c.activities.length, 0)
+
+function AddCityCard({ onClick }) {
+  return (
+    <div
+      onClick={onClick}
+      className="city-card"
+      style={{
+        border: '2px dashed #d8c5a6', borderRadius: 26,
+        background: 'repeating-linear-gradient(45deg,#fdf8ee,#fdf8ee 14px,#fbf3e4 14px,#fbf3e4 28px)',
+        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+        padding: '40px 20px', gap: 10, cursor: 'pointer', minHeight: 180,
+        boxShadow: 'none',
+      }}
+    >
+      <div style={{ width: 48, height: 48, borderRadius: '50%', border: '2px dashed #c8aa80', display: 'grid', placeItems: 'center', color: '#b39875', fontSize: 26 }}>+</div>
+      <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 18, color: '#9a8467' }}>Add a city</div>
+      <div style={{ fontSize: 13, fontWeight: 500, color: '#b39875', textAlign: 'center', maxWidth: 200 }}>Generate quests for any city with AI</div>
+    </div>
+  )
+}
 
 export default function HomeScreen() {
-  const { travelerName, stamps, homeTab, setHomeTab } = useGameStore(s => ({
+  const { travelerName, stamps, homeTab, setHomeTab, userCities, openAddCity } = useGameStore(s => ({
     travelerName: s.travelerName,
     stamps:       s.stamps,
     homeTab:      s.homeTab,
     setHomeTab:   s.setHomeTab,
+    userCities:   s.userCities,
+    openAddCity:  s.openAddCity,
   }))
+
+  const totalActivities = userCities.reduce((n, c) => n + c.activities.length, 0)
 
   const [tabDir, setTabDir] = useState(1)
   const done = Object.keys(stamps).length
@@ -359,25 +382,26 @@ export default function HomeScreen() {
         <div style={{ flex: 1 }} />
         <div style={{ textAlign: 'right', flexShrink: 0 }}>
           <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: .5, textTransform: 'uppercase', color: '#b39875' }}>Total stamps</div>
-          <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 15, color: '#6aa548' }}>{done} / {TOTAL_ACTIVITIES}</div>
+          <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 15, color: '#6aa548' }}>{done} / {totalActivities}</div>
         </div>
       </div>
 
       {homeTab === 'cities' && (
         <div key="home-cities" className={`city-grid ${tabAnim}`}>
-          {CITIES.map(c => <CitySpreadCard key={c.id} city={c} stamps={stamps} />)}
+          {userCities.map(c => <CitySpreadCard key={c.id} city={c} stamps={stamps} />)}
+          <AddCityCard onClick={openAddCity} />
         </div>
       )}
 
       {homeTab === 'stamps' && (
         <div key="home-stamps" className={tabAnim}>
-          <AllStampsTab stamps={stamps} />
+          <AllStampsTab stamps={stamps} cities={userCities} />
         </div>
       )}
 
       {homeTab === 'scrapbook' && (
         <div key="home-scrapbook" className={tabAnim}>
-          <ScrapbookTab stamps={stamps} />
+          <ScrapbookTab stamps={stamps} cities={userCities} />
         </div>
       )}
 

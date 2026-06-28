@@ -1,5 +1,4 @@
 import { useMemo, useState } from 'react'
-import { getCityById } from '../data/cities'
 import useGameStore, { rotFromId, tiltFromId } from '../store/useGameStore'
 import { useActivityPhoto } from '../hooks/usePhoto'
 import StampCircle from './StampCircle'
@@ -248,14 +247,17 @@ function CityScrapCard({ entry: e, city }) {
 const CITY_TAB_ORDER = ['stamps', 'scrapbook']
 
 export default function CityDetail() {
-  const { activeCityId, stamps, cityTab, setCityTab, openModal, goHome } = useGameStore(s => ({
+  const { activeCityId, stamps, cityTab, setCityTab, openModal, goHome, userCities } = useGameStore(s => ({
     activeCityId: s.activeCityId,
     stamps:       s.stamps,
     cityTab:      s.cityTab,
     setCityTab:   s.setCityTab,
     openModal:    s.openModal,
     goHome:       s.goHome,
+    userCities:   s.userCities,
   }))
+
+  const city = userCities.find(c => c.id === activeCityId)
 
   const [cityTabDir, setCityTabDir] = useState(1)
 
@@ -269,7 +271,6 @@ export default function CityDetail() {
 
   const tabAnim = cityTabDir >= 0 ? 'anim-tab-right' : 'anim-tab-left'
 
-  const city = getCityById(activeCityId)
   if (!city) return null
 
   const touristActs = city.activities.filter(a => a.level === 'tourist')

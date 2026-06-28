@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { CITIES } from '../data/cities'
 import useGameStore, { rotFromId } from '../store/useGameStore'
 import { savePhoto } from '../utils/db'
 
@@ -33,8 +32,8 @@ function compressImage(dataUrl) {
   })
 }
 
-function findActivity(activityId) {
-  for (const city of CITIES) {
+function findActivity(activityId, cities) {
+  for (const city of cities) {
     const act = city.activities.find(a => a.id === activityId)
     if (act) return { activity: act, city }
   }
@@ -102,12 +101,13 @@ function StampOverlay({ city, activity, rot, phase }) {
 // ── Modal root ────────────────────────────────────────────────────────────────
 
 export default function StampModal() {
-  const { modalActivityId, stamps, closeModal, openModal, addStamp } = useGameStore(s => ({
+  const { modalActivityId, stamps, closeModal, openModal, addStamp, userCities } = useGameStore(s => ({
     modalActivityId: s.modalActivityId,
     stamps:          s.stamps,
     closeModal:      s.closeModal,
     openModal:       s.openModal,
     addStamp:        s.addStamp,
+    userCities:      s.userCities,
   }))
 
   const [photo,   setPhoto]   = useState(null)  // compressed data URL
@@ -117,7 +117,7 @@ export default function StampModal() {
   const inputRef  = useRef()
   const timerRefs = useRef([])
 
-  const match = modalActivityId ? findActivity(modalActivityId) : null
+  const match = modalActivityId ? findActivity(modalActivityId, userCities) : null
 
   const clearTimers = () => { timerRefs.current.forEach(clearTimeout); timerRefs.current = [] }
 

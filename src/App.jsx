@@ -5,13 +5,15 @@ import TopBar from './components/TopBar'
 import HomeScreen from './components/HomeScreen'
 import CityDetail from './components/CityDetail'
 import StampModal from './components/StampModal'
+import AddCityModal from './components/AddCityModal'
 import { ChangeNameModal, ResetModal } from './components/SettingsModals'
 
 export default function App() {
-  const { screen, modalActivityId, settingsScreen } = useGameStore(s => ({
-    screen:          s.screen,
-    modalActivityId: s.modalActivityId,
-    settingsScreen:  s.settingsScreen,
+  const { screen, modalActivityId, settingsScreen, addCityModalOpen } = useGameStore(s => ({
+    screen:           s.screen,
+    modalActivityId:  s.modalActivityId,
+    settingsScreen:   s.settingsScreen,
+    addCityModalOpen: s.addCityModalOpen,
   }))
 
   useEffect(() => { window.scrollTo(0, 0) }, [screen])
@@ -27,6 +29,7 @@ export default function App() {
       </main>
 
       {modalActivityId && <StampModal />}
+      {addCityModalOpen && <AddCityModal />}
       {settingsScreen === 'name'  && <ChangeNameModal />}
       {settingsScreen === 'reset' && <ResetModal />}
     </div>

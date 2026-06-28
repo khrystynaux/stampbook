@@ -42,6 +42,7 @@ const useGameStore = create(
       travelerName: '',
       stamps: {},           // { [activityId]: { caption, date } }
       hasTravelerPhoto: false,
+      userCities: [],       // user-built cities (AI-generated)
 
       // ── Transient ───────────────────────────────────────────
       screen: 'intro',      // 'intro' | 'home' | 'city'
@@ -51,10 +52,16 @@ const useGameStore = create(
       menuOpen: false,
       modalActivityId: null,
       settingsScreen: null, // null | 'name' | 'reset'
+      addCityModalOpen: false,
 
       // ── Actions ──────────────────────────────────────────────
-      startApp: (name) =>
-        set({ travelerName: name.trim(), screen: 'home', homeTab: 'cities' }),
+      startApp: (name, firstCity) =>
+        set({ travelerName: name.trim(), screen: 'home', homeTab: 'cities',
+              userCities: firstCity ? [firstCity] : [] }),
+
+      addCity: (city) => set(s => ({ userCities: [city, ...s.userCities] })),
+      openAddCity:  () => set({ addCityModalOpen: true }),
+      closeAddCity: () => set({ addCityModalOpen: false }),
 
       goHome: () =>
         set({ screen: 'home', activeCityId: null, menuOpen: false }),
@@ -105,10 +112,11 @@ const useGameStore = create(
         travelerName:     s.travelerName,
         stamps:           s.stamps,
         hasTravelerPhoto: s.hasTravelerPhoto,
+        userCities:       s.userCities,
       }),
       onRehydrateStorage: () => state => {
         if (state) {
-          state.screen = state.travelerName ? 'home' : 'intro'
+          state.screen = (state.travelerName && state.userCities?.length > 0) ? 'home' : 'intro'
         }
       },
     }
