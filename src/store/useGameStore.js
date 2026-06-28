@@ -55,9 +55,9 @@ const useGameStore = create(
       addCityModalOpen: false,
 
       // ── Actions ──────────────────────────────────────────────
-      startApp: (name, firstCity) =>
+      startApp: (name, cities) =>
         set({ travelerName: name.trim(), screen: 'home', homeTab: 'cities',
-              userCities: firstCity ? [firstCity] : [] }),
+              userCities: Array.isArray(cities) ? cities : (cities ? [cities] : []) }),
 
       addCity: (city) => set(s => ({ userCities: [city, ...s.userCities] })),
       openAddCity:  () => set({ addCityModalOpen: true }),
@@ -107,7 +107,7 @@ const useGameStore = create(
       setHasTravelerPhoto: (val) => set({ hasTravelerPhoto: val }),
     }),
     {
-      name: 'stampbook-v1',
+      name: 'stampbook-v2',
       partialize: s => ({
         travelerName:     s.travelerName,
         stamps:           s.stamps,

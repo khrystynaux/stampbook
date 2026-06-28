@@ -1,9 +1,8 @@
-import { useState, useEffect } from 'react'
-import { COUNTRIES } from '../data/countries'
-import { getApiKey, saveApiKey, fetchCitiesForCountry, generateCityActivities, buildCity } from '../utils/generateCity'
+import { useState } from 'react'
+import { CITIES } from '../data/cities'
 import useGameStore from '../store/useGameStore'
 
-const GEN_TEXTS = ['Mapping the city…', 'Finding hidden gems…', 'Building your quest list…', 'Almost ready…']
+const MAX_CITIES = 3
 
 function bubble(left, top, size, color, delay, dur) {
   return (
@@ -17,97 +16,75 @@ function bubble(left, top, size, color, delay, dur) {
   )
 }
 
+function CityCard({ city, selected, onToggle, disabled }) {
+  return (
+    <button
+      onClick={onToggle}
+      style={{
+        position: 'relative',
+        background: selected ? city.accentSoft : '#fffdf7',
+        border: `2.5px solid ${selected ? city.ink : city.accentSoft}`,
+        borderRadius: 16, padding: '12px 12px 10px',
+        cursor: (disabled && !selected) ? 'default' : 'pointer',
+        textAlign: 'left',
+        boxShadow: selected ? `0 4px 0 -1px ${city.accent}` : '0 3px 0 #ede8df',
+        transition: 'all .15s',
+        opacity: (disabled && !selected) ? 0.4 : 1,
+      }}
+    >
+      {selected && (
+        <div style={{
+          position: 'absolute', top: 7, right: 7,
+          width: 20, height: 20, borderRadius: '50%',
+          background: city.ink, color: '#fff',
+          display: 'grid', placeItems: 'center',
+          fontSize: 11, fontWeight: 800,
+        }}>✓</div>
+      )}
+      <div style={{ fontSize: 26, lineHeight: 1, marginBottom: 5 }}>{city.flag}</div>
+      <div style={{
+        fontFamily: 'Fredoka', fontWeight: 600,
+        fontSize: 'clamp(13px,3.2vw,16px)', lineHeight: 1.15,
+        color: selected ? city.ink : '#4a3528', marginBottom: 2,
+      }}>{city.name}</div>
+      <div style={{
+        fontSize: 10, fontWeight: 700, letterSpacing: 0.5,
+        textTransform: 'uppercase', color: city.ink, opacity: selected ? 0.8 : 0.55,
+      }}>{city.country}</div>
+    </button>
+  )
+}
+
 export default function WelcomeScreen() {
   const startApp = useGameStore(s => s.startApp)
 
-  const [step, setStep]             = useState('name')
-  const [name, setName]             = useState('')
-  const [apiKey, setApiKey]         = useState(getApiKey)
-  const [country, setCountry]       = useState('')
-  const [countryQ, setCountryQ]     = useState('')
-  const [cities, setCities]         = useState([])
-  const [cityQ, setCityQ]           = useState('')
-  const [selectedCity, setSelectedCity] = useState('')
-  const [loadingCities, setLoadingCities] = useState(false)
-  const [genText, setGenText]       = useState(GEN_TEXTS[0])
-  const [error, setError]           = useState('')
+  const [step, setStep]           = useState('name')
+  const [name, setName]           = useState('')
+  const [selectedIds, setSelectedIds] = useState([])
 
-  // Fetch cities when country is picked
-  useEffect(() => {
-    if (!country) return
-    setLoadingCities(true)
-    setCities([])
-    fetchCitiesForCountry(country)
-      .then(list => setCities(list))
-      .catch(() => {})
-      .finally(() => setLoadingCities(false))
-  }, [country])
-
-  // Cycle generating text
-  useEffect(() => {
-    if (step !== 'generating') return
-    let i = 0
-    const id = setInterval(() => { i = (i + 1) % GEN_TEXTS.length; setGenText(GEN_TEXTS[i]) }, 1500)
-    return () => clearInterval(id)
-  }, [step])
-
-  const filteredCountries = countryQ.trim()
-    ? COUNTRIES.filter(c => c.toLowerCase().includes(countryQ.toLowerCase()))
-    : COUNTRIES
-
-  const filteredCities = cityQ.trim()
-    ? cities.filter(c => c.toLowerCase().startsWith(cityQ.toLowerCase())).slice(0, 24)
-    : cities.slice(0, 24)
-
-  const effectiveCity = selectedCity || cityQ.trim()
-
-  const handleNameNext = () => {
-    if (!name.trim()) return
-    setStep(getApiKey() ? 'country' : 'apikey')
+  const toggleCity = (id) => {
+    setSelectedIds(prev => {
+      if (prev.includes(id)) return prev.filter(x => x !== id)
+      if (prev.length >= MAX_CITIES) return prev
+      return [...prev, id]
+    })
   }
 
-  const handleApiKeySave = () => {
-    if (!apiKey.trim()) return
-    saveApiKey(apiKey)
-    setStep('country')
+  const handleNameNext = () => { if (name.trim()) setStep('cities') }
+
+  const handleStart = () => {
+    if (!selectedIds.length) return
+    const cities = CITIES.filter(c => selectedIds.includes(c.id))
+    startApp(name.trim(), cities)
   }
 
-  const handleCountrySelect = (c) => {
-    setCountry(c)
-    setCountryQ(c)
-    setSelectedCity('')
-    setCityQ('')
-    setStep('city')
-  }
-
-  const handleGenerate = async () => {
-    if (!effectiveCity || !country) return
-    setStep('generating')
-    setError('')
-    setGenText(GEN_TEXTS[0])
-    try {
-      const key = getApiKey() || apiKey
-      const activities = await generateCityActivities(effectiveCity, country, key)
-      const city = buildCity(effectiveCity, country, activities)
-      startApp(name, city)
-    } catch (err) {
-      const msg = err.message || ''
-      setError(msg.includes('401') || msg.toLowerCase().includes('api')
-        ? 'Invalid API key — double-check and try again.'
-        : 'Something went wrong. Please try again.')
-      setStep('city')
-    }
-  }
-
-  // ── Card tall for list steps
-  const isList = step === 'country' || step === 'city'
-  const isGenerating = step === 'generating'
+  const isCities = step === 'cities'
 
   return (
     <section style={{
       position: 'relative', minHeight: '100dvh',
       display: 'grid', placeItems: 'center',
-      padding: 'clamp(16px,4vw,32px) 20px',
+      padding: 'clamp(12px,3vw,24px) 16px',
       overflow: 'hidden',
       background: 'radial-gradient(circle at 50% -10%, #eef7e4, #fffdf7 58%)',
     }}>
@@ -117,8 +94,8 @@ export default function WelcomeScreen() {
       {bubble('76%','72%',16,'#ffc6d3',.7,5.2)}
 
       <div style={{
-        position: 'relative', width: '100%', maxWidth: 460,
-        maxHeight: isList ? '86dvh' : undefined,
+        position: 'relative', width: '100%', maxWidth: 480,
+        maxHeight: isCities ? '92dvh' : undefined,
         display: 'flex', flexDirection: 'column',
         background: '#fff', border: '2px solid #f0e3cf', borderRadius: 30,
         boxShadow: '0 18px 0 -8px #ead9bf',
@@ -128,7 +105,7 @@ export default function WelcomeScreen() {
 
         {/* ── STEP: name ── */}
         {step === 'name' && (
-          <div style={{ padding: 'clamp(24px,5vw,34px) clamp(20px,5vw,30px)', textAlign: 'center' }}>
+          <div style={{ padding: 'clamp(22px,5vw,34px) clamp(20px,5vw,30px)', textAlign: 'center' }}>
             <img src="/plane-icon.png" alt="" style={{ width: 74, display: 'block', margin: '0 auto 6px', filter: 'drop-shadow(0 3px 4px rgba(0,0,0,.12))' }} />
             <h1 style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 'clamp(28px,8vw,34px)', lineHeight: 1.05, margin: '4px 0 10px', color: '#4a3528' }}>
               Stampbook
@@ -175,189 +152,62 @@ export default function WelcomeScreen() {
           </div>
         )}
 
-        {/* ── STEP: apikey ── */}
-        {step === 'apikey' && (
-          <div style={{ padding: 'clamp(24px,5vw,34px) clamp(20px,5vw,30px)' }}>
-            <div style={{ textAlign: 'center', marginBottom: 20 }}>
-              <div style={{ fontSize: 38, marginBottom: 6 }}>🔑</div>
-              <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 24, color: '#4a3528', marginBottom: 8 }}>
-                Connect AI
-              </div>
-              <p style={{ margin: 0, fontSize: 14, fontWeight: 500, color: '#8b7355', lineHeight: 1.55 }}>
-                Stampbook uses Claude AI to generate authentic quests for your city. Paste your Anthropic API key below — it's saved only in your browser.
-              </p>
-            </div>
-            <input
-              type="password"
-              value={apiKey}
-              onChange={e => setApiKey(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && handleApiKeySave()}
-              placeholder="sk-ant-…"
-              autoFocus
-              style={{
-                width: '100%', border: '2px solid #f0e3cf', background: '#fffdf7',
-                borderRadius: 13, padding: '13px 14px', marginBottom: 14,
-                fontFamily: 'monospace', fontSize: 13, color: '#5c4033', outline: 'none',
-              }}
-              onFocus={e => e.target.style.borderColor = '#d4b896'}
-              onBlur={e => e.target.style.borderColor = '#f0e3cf'}
-            />
-            <button
-              onClick={handleApiKeySave}
-              disabled={!apiKey.trim()}
-              style={{
-                width: '100%', padding: '14px 24px',
-                fontFamily: 'Fredoka', fontWeight: 600, fontSize: 16,
-                border: 'none', borderRadius: 14, cursor: apiKey.trim() ? 'pointer' : 'default',
-                background: apiKey.trim() ? '#9acd7b' : '#e8d4b8',
-                color: apiKey.trim() ? '#fff' : '#b39875',
-                boxShadow: apiKey.trim() ? '0 4px 0 #7fb262' : 'none',
-              }}
-            >
-              Save and continue
-            </button>
-            <button onClick={() => setStep('name')} style={{ display: 'block', width: '100%', marginTop: 10, background: 'none', border: 'none', cursor: 'pointer', color: '#b39875', fontWeight: 600, fontSize: 13 }}>
-              ← Back
-            </button>
-          </div>
-        )}
-
-        {/* ── STEP: country ── */}
-        {step === 'country' && (
+        {/* ── STEP: cities ── */}
+        {step === 'cities' && (
           <>
-            <div style={{ padding: '18px 20px 12px', borderBottom: '2px solid #f0e3cf' }}>
-              <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 20, color: '#4a3528', marginBottom: 10 }}>
-                Choose a country
+            <div style={{ padding: '18px 20px 12px', borderBottom: '2px solid #f0e3cf', flexShrink: 0 }}>
+              <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 21, color: '#4a3528', marginBottom: 2 }}>
+                Pick your cities
               </div>
-              <input
-                autoFocus
-                value={countryQ}
-                onChange={e => setCountryQ(e.target.value)}
-                placeholder="Search countries…"
-                style={{
-                  width: '100%', border: '2px solid #f0e3cf', background: '#fffdf7',
-                  borderRadius: 12, padding: '10px 14px',
-                  fontFamily: 'Quicksand', fontWeight: 600, fontSize: 14, color: '#5c4033', outline: 'none',
-                }}
-                onFocus={e => e.target.style.borderColor = '#d4b896'}
-                onBlur={e => e.target.style.borderColor = '#f0e3cf'}
-              />
+              <div style={{ fontSize: 13, fontWeight: 500, color: '#9a8467' }}>
+                Choose up to {MAX_CITIES} to start — you can add more later.
+              </div>
             </div>
-            <div style={{ overflowY: 'auto', flex: 1 }}>
-              {filteredCountries.map(c => (
-                <button key={c} onClick={() => handleCountrySelect(c)}
-                  style={{
-                    width: '100%', padding: '12px 20px', textAlign: 'left',
-                    background: 'none', border: 'none', borderBottom: '1px solid #f5ecd8',
-                    fontFamily: 'Quicksand', fontWeight: 600, fontSize: 14, color: '#5c4033',
-                    cursor: 'pointer',
-                  }}
-                  onMouseEnter={e => e.currentTarget.style.background = '#fdf8ee'}
-                  onMouseLeave={e => e.currentTarget.style.background = 'none'}
-                >{c}</button>
-              ))}
-              {filteredCountries.length === 0 && (
-                <div style={{ padding: '28px 20px', textAlign: 'center', color: '#b39875', fontWeight: 600 }}>No results</div>
-              )}
-            </div>
-            <div style={{ padding: '12px 20px', borderTop: '1px solid #f0e3cf' }}>
-              <button onClick={() => setStep(getApiKey() ? 'name' : 'apikey')}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#b39875', fontWeight: 600, fontSize: 13 }}>
-                ← Back
-              </button>
-            </div>
-          </>
-        )}
 
-        {/* ── STEP: city ── */}
-        {step === 'city' && (
-          <>
-            <div style={{ padding: '18px 20px 12px', borderBottom: '2px solid #f0e3cf' }}>
-              <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: .5, textTransform: 'uppercase', color: '#b39875', marginBottom: 2 }}>{country}</div>
-              <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 20, color: '#4a3528', marginBottom: 10 }}>
-                Which city?
+            <div style={{ overflowY: 'auto', flex: 1, padding: '12px 14px 4px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 9 }}>
+                {CITIES.map(c => (
+                  <CityCard
+                    key={c.id}
+                    city={c}
+                    selected={selectedIds.includes(c.id)}
+                    onToggle={() => toggleCity(c.id)}
+                    disabled={selectedIds.length >= MAX_CITIES}
+                  />
+                ))}
               </div>
-              {error && (
-                <div style={{ padding: '8px 12px', background: '#fdeee9', borderRadius: 10, marginBottom: 10 }}>
-                  <span style={{ fontSize: 13, fontWeight: 600, color: '#c0492f' }}>{error}</span>
-                </div>
-              )}
-              <input
-                autoFocus
-                value={cityQ}
-                onChange={e => { setCityQ(e.target.value); setSelectedCity('') }}
-                onKeyDown={e => e.key === 'Enter' && effectiveCity && handleGenerate()}
-                placeholder={loadingCities ? 'Loading cities…' : 'Type a city name…'}
-                style={{
-                  width: '100%', border: '2px solid #f0e3cf', background: '#fffdf7',
-                  borderRadius: 12, padding: '10px 14px',
-                  fontFamily: 'Quicksand', fontWeight: 600, fontSize: 14, color: '#5c4033', outline: 'none',
-                }}
-                onFocus={e => e.target.style.borderColor = '#d4b896'}
-                onBlur={e => e.target.style.borderColor = '#f0e3cf'}
-              />
             </div>
-            <div style={{ overflowY: 'auto', flex: 1 }}>
-              {loadingCities && (
-                <div style={{ padding: '18px', textAlign: 'center', color: '#b39875', fontWeight: 600, fontSize: 13 }}>
-                  Loading cities…
-                </div>
-              )}
-              {filteredCities.map(c => (
-                <button key={c} onClick={() => { setSelectedCity(c); setCityQ(c) }}
-                  style={{
-                    width: '100%', padding: '11px 20px', textAlign: 'left',
-                    background: selectedCity === c ? '#fdf3e3' : 'none',
-                    border: 'none', borderBottom: '1px solid #f5ecd8',
-                    fontFamily: 'Quicksand', fontWeight: 600, fontSize: 14, color: '#5c4033',
-                    cursor: 'pointer',
-                  }}
-                  onMouseEnter={e => { if (selectedCity !== c) e.currentTarget.style.background = '#fdf8ee' }}
-                  onMouseLeave={e => { if (selectedCity !== c) e.currentTarget.style.background = 'none' }}
-                >{c}</button>
-              ))}
-            </div>
-            <div style={{ padding: '12px 20px', borderTop: '2px solid #f0e3cf', display: 'flex', gap: 10 }}>
-              <button onClick={() => { setStep('country'); setCountryQ(country); setSelectedCity(''); setCityQ('') }}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#b39875', fontWeight: 600, fontSize: 13, padding: '0 4px' }}>
-                ← Back
-              </button>
+
+            <div style={{ padding: '10px 16px 16px', borderTop: '2px solid #f0e3cf', flexShrink: 0 }}>
+              <div style={{ textAlign: 'center', fontSize: 12.5, fontWeight: 600, color: '#9a8467', marginBottom: 8 }}>
+                {selectedIds.length === 0
+                  ? 'Select at least one city to continue'
+                  : `${selectedIds.length} of ${MAX_CITIES} selected`}
+              </div>
               <button
-                onClick={handleGenerate}
-                disabled={!effectiveCity}
+                onClick={handleStart}
+                disabled={!selectedIds.length}
                 style={{
-                  flex: 1, padding: '12px 24px',
-                  fontFamily: 'Fredoka', fontWeight: 600, fontSize: 16,
-                  border: 'none', borderRadius: 14, cursor: effectiveCity ? 'pointer' : 'default',
-                  background: effectiveCity ? '#9acd7b' : '#e8d4b8',
-                  color: effectiveCity ? '#fff' : '#b39875',
-                  boxShadow: effectiveCity ? '0 4px 0 #7fb262' : 'none',
-                  transition: 'all .15s',
+                  width: '100%', padding: '14px 24px',
+                  fontFamily: 'Fredoka', fontWeight: 600, fontSize: 17,
+                  border: 'none', borderRadius: 16,
+                  cursor: selectedIds.length ? 'pointer' : 'default',
+                  background: selectedIds.length ? '#9acd7b' : '#e8d4b8',
+                  color: selectedIds.length ? '#fff' : '#b39875',
+                  boxShadow: selectedIds.length ? '0 5px 0 #7fb262' : 'none',
+                  transition: 'all .2s',
                 }}
               >
-                {effectiveCity ? `Start with ${effectiveCity}` : 'Select a city'}
+                Let's go!
+              </button>
+              <button
+                onClick={() => setStep('name')}
+                style={{ display: 'block', width: '100%', marginTop: 8, background: 'none', border: 'none', cursor: 'pointer', color: '#b39875', fontWeight: 600, fontSize: 13 }}
+              >
+                ← Back
               </button>
             </div>
           </>
-        )}
-
-        {/* ── STEP: generating ── */}
-        {step === 'generating' && (
-          <div style={{ padding: '56px 30px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 22 }}>
-            <div style={{
-              width: 68, height: 68, borderRadius: '50%',
-              border: '5px solid #f0e3cf', borderTopColor: '#9acd7b',
-              animation: 'spin 1s linear infinite',
-            }} />
-            <div>
-              <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 22, color: '#4a3528', marginBottom: 6 }}>
-                Setting up {effectiveCity}
-              </div>
-              <div key={genText} style={{ fontSize: 14, fontWeight: 600, color: '#9a8467', animation: 'fadein .3s ease both' }}>
-                {genText}
-              </div>
-            </div>
-          </div>
         )}
 
       </div>

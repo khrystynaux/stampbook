@@ -343,8 +343,7 @@ function AddCityCard({ onClick }) {
       }}
     >
       <div style={{ width: 48, height: 48, borderRadius: '50%', border: '2px dashed #c8aa80', display: 'grid', placeItems: 'center', color: '#b39875', fontSize: 26 }}>+</div>
-      <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 18, color: '#9a8467' }}>Add a city</div>
-      <div style={{ fontSize: 13, fontWeight: 500, color: '#b39875', textAlign: 'center', maxWidth: 200 }}>Generate quests for any city with AI</div>
+      <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 18, color: '#9a8467' }}>Add another city</div>
     </div>
   )
 }
