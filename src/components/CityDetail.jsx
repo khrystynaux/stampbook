@@ -101,10 +101,10 @@ function UnstampedCard({ a, city }) {
       }}>
         {a.label}
       </div>
-      <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 'clamp(12px,3vw,15px)', lineHeight: 1.15, color: '#4a3528', marginBottom: 'clamp(3px,1vw,5px)' }}>
+      <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 16, lineHeight: 1.15, color: '#4a3528', marginBottom: 'clamp(3px,1vw,5px)' }}>
         {a.name}
       </div>
-      <p style={{ margin: 0, fontSize: 'clamp(11px,2.5vw,13px)', fontWeight: 500, color: '#9a8467', lineHeight: 1.35 }}>
+      <p style={{ margin: 0, fontSize: 14, fontWeight: 500, color: '#9a8467', lineHeight: 1.35 }}>
         {a.blurb}
       </p>
       <div style={{ flex: 1, minHeight: 6 }} />
